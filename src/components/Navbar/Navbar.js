@@ -82,6 +82,9 @@ function Navbar() {
                     <div className="logo">
                         <Link to={"/"}>Anasayfa</Link>
                     </div>
+                    <div className='services'>
+                        <Link to={"/services"}>Servisler</Link>
+                    </div>
                 </div>
                 <div className="right">
 
