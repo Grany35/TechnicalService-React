@@ -8,3 +8,7 @@ export const customerValidations = yup.object().shape({
     address: yup.string().min(10, "En az 10 karakter girmelisiniz...").required(required_message),
     phone: yup.number().min(10, "En az 10 karakter girmelisiniz...").required(required_message)
 });
+
+export const serviceValidations=yup.object().shape({
+    customerDescription:yup.string().min(5,"En Az 5 karakter olmalıdır").required(required_message),
+});

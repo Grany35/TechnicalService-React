@@ -12,14 +12,18 @@ import {
     Input
 } from '@chakra-ui/react'
 import axios from "axios";
+import { notification } from 'antd';
 import { useFormik } from 'formik';
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import './styles.css';
-import { customerValidations } from './validations';
+import { customerValidations, serviceValidations } from './validations';
 
 function Navbar() {
-    const formik = useFormik({
+
+    const [users, setUser] = useState([]);
+
+    const formikCustomer = useFormik({
         initialValues: {
             fullName: "",
             email: "",
@@ -27,12 +31,47 @@ function Navbar() {
             phone: "",
         },
         validationSchema: customerValidations,
-        onSubmit:async(values,bag)=>{
-           axios.post("http://localhost:5049/api/Customers",values);
-
-            formik.resetForm();
+        onSubmit: async (values, bag) => {
+            try {
+                await axios.post("http://localhost:5049/api/Customers", values).then(({ data }) => setUser(data)).then(() => onServiceOpen()).then(onCustomerClose)
+            } catch (error) {
+                console.log("error", error);
+            }
         }
     })
+
+    const formikService = useFormik({
+        enableReinitialize: true,
+        initialValues: {
+            customerId: users.id,
+            customerDescription: "",
+        },
+        validationSchema: serviceValidations,
+        onSubmit: async (values, bag) => {
+
+            try {
+                await axios.post("http://localhost:5049/api/ServiceInformations", values)
+                notification.success({
+                    message: "Başarılı",
+                    description: "Servi Kaydı Başlatıldı...",
+                    duration: 5,
+                    placement: 'bottomRight',
+                })
+            } catch (error) {
+                notification.error({
+                    message: "Hata!",
+                    description: error.message,
+                    duration: 5,
+                    placement: 'bottomRight',
+                })
+            }
+
+        }
+    })
+
+    useEffect(() => {
+        console.log("useefect", users.id)
+    }, [users])
 
     const { isOpen: isCustomerOpen, onOpen: onCustomerOpen, onClose: onCustomerClose } = useDisclosure()
     const { isOpen: isServiceOpen, onOpen: onServiceOpen, onClose: onServiceClose } = useDisclosure()
@@ -71,41 +110,38 @@ function Navbar() {
             <Modal isOpen={isCustomerOpen} onClose={onCustomerClose}>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader textAlign={"center"} color={"red"}>Müşteri Giriş Ekranı</ModalHeader>
+                    <ModalHeader textAlign={"center"} color={"red"}>Müşteri Kayıt Ekranı</ModalHeader>
                     <ModalCloseButton />
 
                     <ModalBody>
 
-                        <form onSubmit={formik.handleSubmit}>
+                        <form onSubmit={formikCustomer.handleSubmit}>
+
                             <FormControl>
                                 <FormLabel>Telefon Numarası</FormLabel>
-                                <Input maxLength={10} placeholder='5xxxxxxxxx' name='phone' onChange={formik.handleChange} onBlur={formik.handleBlur} value={formik.values.phone} />
+                                <Input maxLength={10} placeholder='5xxxxxxxxx' name='phone' onChange={formikCustomer.handleChange} onBlur={formikCustomer.handleBlur} value={formikCustomer.values.phone} />
                             </FormControl>
 
                             <FormControl mt={4}>
                                 <FormLabel>Ad / Soyad</FormLabel>
-                                <Input name='fullName' onChange={formik.handleChange} onBlur={formik.handleBlur} value={formik.values.fullName} />
+                                <Input name='fullName' onChange={formikCustomer.handleChange} onBlur={formikCustomer.handleBlur} value={formikCustomer.values.fullName} />
                             </FormControl>
 
                             <FormControl mt={4}>
                                 <FormLabel>Email Adresi</FormLabel>
-                                <Input placeholder='xxx@yyy.zzz' name='email' onChange={formik.handleChange} onBlur={formik.handleBlur} value={formik.values.email} />
+                                <Input placeholder='xxx@yyy.zzz' name='email' onChange={formikCustomer.handleChange} onBlur={formikCustomer.handleBlur} value={formikCustomer.values.email} />
                             </FormControl>
 
                             <FormControl mt={4}>
                                 <FormLabel>Adresi</FormLabel>
-                                <Input name='address' onChange={formik.handleChange} onBlur={formik.handleBlur} value={formik.values.address} />
+                                <Input name='address' onChange={formikCustomer.handleChange} onBlur={formikCustomer.handleBlur} value={formikCustomer.values.address} />
                             </FormControl>
                         </form>
                     </ModalBody>
-                    <ModalFooter mt={3}>
-                        <Button colorScheme='blue' mr={3} onClick={formik.handleSubmit}>
-                            Müşteriyi Kaydet
+                    <ModalFooter mt={2}>
+                        <Button colorScheme='blue' mr={3} onClick={formikCustomer.handleSubmit}>
+                            Müşteriyi Kaydet Ve Servis İşlemine Devam Et
                         </Button>
-                        <Button onClick={() => {
-                            onServiceOpen();
-                            onCustomerClose();
-                        }} variant='ghost'>Secondary Action</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
@@ -118,14 +154,33 @@ function Navbar() {
                     <ModalHeader textAlign={"center"} color={"red"}>Servis Giriş Ekranı</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        denemeeeee
+                        <form onSubmit={formikService.handleSubmit}>
+                            {
+                                users && (
+                                    <FormControl>
+                                        <FormLabel> Telefon Numarası </FormLabel>
+                                        <Input disabled value={users.phone || ''} />
+                                    </FormControl>
+                                )
+                            }
+
+
+
+
+
+                            <FormControl mt={3}>
+                                <FormLabel>Müşteri Açıklaması</FormLabel>
+                                <Input name='customerDescription' onChange={formikService.handleChange} onBlur={formikService.handleBlur} value={formikService.values.customerDescription} />
+                            </FormControl>
+                        </form>
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button colorScheme='blue' mr={3} onClick={onServiceClose}>
-                            Kapat
+                        <Button colorScheme='blue' mr={3} onClick={() => {
+                            formikService.handleSubmit();
+                        }}>
+                            Servisi Başlat
                         </Button>
-                        <Button variant='ghost'>Secondary Action</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
