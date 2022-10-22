@@ -18,8 +18,11 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import './styles.css';
 import { customerValidations, serviceValidations } from './validations';
+import { useQueryClient } from '@tanstack/react-query';
 
 function Navbar() {
+
+    const queryClient=useQueryClient();
 
     const [users, setUser] = useState([]);
 
@@ -57,6 +60,8 @@ function Navbar() {
                     duration: 5,
                     placement: 'bottomRight',
                 })
+                queryClient.invalidateQueries("services")
+                onServiceClose();
             } catch (error) {
                 notification.error({
                     message: "Hata!",
@@ -87,25 +92,11 @@ function Navbar() {
                     </div>
                 </div>
                 <div className="right">
-
                     <Link>
                         <Button variant={"outline"} onClick={onCustomerOpen} mr={3} colorScheme={"blue"}>
                             Müşteri Kaydet
                         </Button>
                     </Link>
-
-                    <Link>
-                        <Button variant={"outline"} mr={3} colorScheme={"yellow"}>
-                            Müşteri Ara
-                        </Button>
-                    </Link>
-
-                    <Link>
-                        <Button variant={"outline"} onClick={onServiceOpen} colorScheme={"red"}>
-                            Servis Girişi
-                        </Button>
-                    </Link>
-
                 </div>
             </nav>
 
@@ -166,18 +157,12 @@ function Navbar() {
                                     </FormControl>
                                 )
                             }
-
-
-
-
-
                             <FormControl mt={3}>
                                 <FormLabel>Müşteri Açıklaması</FormLabel>
                                 <Input name='customerDescription' onChange={formikService.handleChange} onBlur={formikService.handleBlur} value={formikService.values.customerDescription} />
                             </FormControl>
                         </form>
                     </ModalBody>
-
                     <ModalFooter>
                         <Button colorScheme='blue' mr={3} onClick={() => {
                             formikService.handleSubmit();
