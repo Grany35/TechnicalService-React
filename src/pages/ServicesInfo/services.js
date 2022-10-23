@@ -34,6 +34,11 @@ function Services() {
             key: "phone",
         },
         {
+            title:"Email",
+            dataIndex:["customer","email"],
+            key:"email",
+        },
+        {
             title: "Müşteri Açıklaması",
             key: "customerDescription",
             dataIndex: "customerDescription",
@@ -42,7 +47,7 @@ function Services() {
             title: "Durumu",
             key: "status",
             dataIndex: "status",
-            render: (status) => <div>{status ? 'Devam Ediyor' : 'Tamamlandı'}</div>,
+            render: (status) => <div className={status?"bg-green":"bg-red"}>{status ? 'Devam Ediyor' : 'Tamamlandı'}</div>,
         },
 
     ]
