@@ -1,15 +1,24 @@
-import React from 'react'
+import React, {  useState } from 'react'
 import { Table } from "antd";
 import { useQuery } from '@tanstack/react-query';
 import { fetchServices } from '../../api';
+import { Button } from '@chakra-ui/react';
+import "./styles.css";
 
 function Services() {
+    const [pageNumber, setPageNumber] = useState(1);
+    const [isActive, setIsActive] = useState(true);
 
-    const { data } = useQuery(["services"], fetchServices);
+    const { data } = useQuery(["services", pageNumber, isActive], () => fetchServices(pageNumber, isActive));
 
 
-
-    console.log(data);
+    const click=()=>{
+        if (isActive) {
+            setIsActive(false);
+        }else{
+            setIsActive(true);
+        }
+    }
 
 
     const columns = [
@@ -19,7 +28,7 @@ function Services() {
             key: "customer",
         },
         {
-            title: "Müşteri Adı/Soyadı",
+            title: "Telefon Numarası",
             dataIndex: ["customer", "phone"],
             key: "phone",
         },
@@ -39,8 +48,27 @@ function Services() {
 
 
     return (
-        <div >
-            <Table  dataSource={data} columns={columns} rowKey="id" />
+        <div>
+            <Table pagination={false} dataSource={data} columns={columns} rowKey="id" />
+            <div>
+            <Button onClick={() => setPageNumber(page => page - 1)} disabled={pageNumber === 1} > Önceki Sayfa </Button>
+            <Button onClick={() => setPageNumber(page => page + 1)}  > Sonraki Sayfa </Button>
+            <Button ml={20} className='rigth' colorScheme={"green"} onClick={click} >
+                {
+                    isActive &&(
+                       <p>Bitenleri Göster</p> 
+                    )
+                }
+                {
+                    !isActive&&(
+                        <p>Devam Edenleri Göster</p> 
+                    )
+                }
+                </Button>
+            </div>
+            
+
+
         </div>
     )
 }
